@@ -479,7 +479,7 @@ class KGProcessor(DataProcessor):
         annotate_ = partial(
                 solve,
                 pretrain=self.args.pretrain
-            )
+            ) #定义annotate_函数
         examples = list(
             tqdm(
                 map(annotate_, lines),

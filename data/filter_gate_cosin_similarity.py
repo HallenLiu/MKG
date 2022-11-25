@@ -64,7 +64,7 @@ class FilterGate():
             sim_matrix=[[0]*n_img for i in range(n_img)]
             for i in range(n_img):
                 for j in range(i+1,n_img):
-                    sim=self.phash_sim(self.base_path + ent + '/'+imgs[i], self.base_path + ent + '/'+imgs[j])
+                    sim=self.dhash_sim(self.base_path + ent + '/'+imgs[i], self.base_path + ent + '/'+imgs[j])
                     # print(sim)
                     sim_matrix[i][j]=sim
                     sim_matrix[j][i] =sim
@@ -97,10 +97,10 @@ class FilterGate():
 
 
 if __name__ == '__main__':
-    f=FilterGate('dataset/FB15k-images/',hash_size=16)
+    f=FilterGate('../dataset/FB15k-images/',hash_size=16)
     f.filter()
-    if not os.path.exists('data'):
-        os.mkdir('data/')
-    if not os.path.exists('data/FB15k-pickle'):
-        os.mkdir('data/FB15k-pickle/')
-    f.save_best_imgs('data/FB15k-pickle/FB15k_best_img.pickle')
+    if not os.path.exists('../data'):
+        os.mkdir('../data/')
+    if not os.path.exists('../data/FB15k-pickle'):
+        os.mkdir('../data/FB15k-pickle/')
+    f.save_best_imgs('../data/FB15k-pickle/FB15k_dhash_best_img.pickle')

@@ -157,14 +157,85 @@ class RelGraphConvTwoLayer(nn.Module): #两层之后需要加上邻居采样
         return hs
 
 
+class RelGAT(nn.Module):
+    r"""
+    R-GAT
+    """
+
+    def __init__(self,
+                 in_feat,
+                 hid_feat,
+                 out_feat,
+                 rel_names,
+                 heads
+                 ):
+        """
+
+        :param in_feat: int
+        :param hid_feat: int
+        :param out_feat: int
+        :param num_classes: int
+        :param rel_names: [etype]
+        """
+        super(RelGAT, self).__init__()
+        self.get_layers = nn.ModuleList()
+        #three-layer gat
+        self.get_layers.append(
+            dglnn.HeteroGraphConv(
+                {rel:dglnn.GATConv(in_feats=in_feat,
+                                   out_feats=hid_feat,
+                                   num_heads=heads[0],
+                                   activation=F.elu())
+                 for rel in rel_names
+                 }
+            )
+        )
+        self.get_layers.append(
+            dglnn.HeteroGraphConv(
+                {rel:dglnn.GATConv(in_feats=hid_feat*heads[0],
+                                   out_feats=hid_feat,
+                                   num_heads=heads[0],
+                                   activation=F.elu())
+                 for rel in rel_names
+                 }
+            )
+        )
+        self.get_layers.append(
+            dglnn.HeteroGraphConv(
+                {rel:dglnn.GATConv(in_feats=hid_feat*heads[1],
+                                   out_feats=out_feat,
+                                   num_heads=heads[0],
+                                   activation=F.elu())
+                 for rel in rel_names
+                 }
+            )
+        )
+    def forward(self,g,inputs):
+        """
+
+        :param g: 输入图
+        :param inputs: 输入节点特征
+        :return: 最后得节点embedding
+        """
+        h = inputs
+        for i,layer in enumerate(self.get_layers):
+            h = layer(g,h)
+            if i == 2:
+                h = h.mean()
+            else:
+                h = h.flatten(1)
+        g.ndata['h'] = h
+        return h
+
+
 class RelLinkPredictor(nn.Module):
-    def __init__(self, in_feat,num_classes ):
+    def __init__(self, in_feat,num_classes=237):
         super(RelLinkPredictor, self).__init__()
         self.W = nn.Linear(2 * in_feat, num_classes)
 
     def apply_edges(self, edges):
         data = torch.cat(edges.src['h'], edges.dst['h'])
-        return {'score': self.W(data)}
+        return {'score': F.relu(self.W(data))}
 
     def forward(self, g, h):
         with g.local_scope():

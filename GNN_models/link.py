@@ -238,6 +238,7 @@ if __name__ == '__main__':
     # load and preprocess dataset
     data = FB15k237Dataset(reverse=False)
     g = data[0]
+
     # print(g)
     num_nodes = g.num_nodes()
     num_rels = data.num_rels
