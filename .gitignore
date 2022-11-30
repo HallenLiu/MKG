@@ -1,0 +1,6 @@
+/dataset
+/.vscode
+/.idea
+.DS_Store
+/*/__pycache__
+/pretrained_model
